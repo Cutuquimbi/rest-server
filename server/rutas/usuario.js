@@ -3,11 +3,10 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 
-const Usuario = require('../models/usuario');
 const { verificaToken, verificaAdmin } = require('../middlewares/autenticacion');
+const Usuario = require('../models/usuario');
 
-
-const app = express();
+let app = express();
 
 
 app.get('/usuario', verificaToken, (req, res) => {
@@ -18,9 +17,9 @@ app.get('/usuario', verificaToken, (req, res) => {
     let limite = req.query.limite || 5;
     limite = Number(limite);
 
-    Usuario.find({ estado: true }, 'nombre email role estado google')
+    Usuario.find({ estado: true })
         .skip(desde)
-        .limit(5)
+        .limit(limite)
         .exec((err, usuarios) => {
             if (err) {
                 return res.status(400).json({
@@ -29,7 +28,7 @@ app.get('/usuario', verificaToken, (req, res) => {
                 });
             }
 
-            Usuario.count({ estado: true }, (err, conteo) => {
+            Usuario.countDocuments({ estado: true }, (err, conteo) => {
                 res.json({
                     ok: true,
                     usuarios,
@@ -63,7 +62,7 @@ app.post('/usuario', [verificaToken, verificaAdmin], (req, res) => {
             ok: true,
             usuario: usuarioDB
         })
-    })
+    });
 });
 
 app.put('/usuario/:id', [verificaToken, verificaAdmin], (req, res) => {
